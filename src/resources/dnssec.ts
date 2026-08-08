@@ -14,7 +14,7 @@ dnssecResource
   .action(async (zoneId, options) => {
     try {
       const response = await client.get(`/zones/${zoneId}/dnssec`);
-      output(response.result, options.json, options.format);
+      output(response.result, { json: !!options.json, format: options.format });
     } catch (error) {
       handleError(error);
     }
@@ -26,8 +26,8 @@ dnssecResource
   .option('--json', 'Output as JSON')
   .action(async (zoneId, options) => {
     try {
-      const response = await client.post(`/zones/${zoneId}/dnssec`, {});
-      output(response.result, options.json);
+      const response = await client.patch(`/zones/${zoneId}/dnssec`, { status: 'active' });
+      output(response.result, { json: !!options.json });
     } catch (error) {
       handleError(error);
     }
@@ -40,7 +40,7 @@ dnssecResource
   .action(async (zoneId, options) => {
     try {
       const response = await client.delete(`/zones/${zoneId}/dnssec`);
-      output(response.result, options.json);
+      output(response.result, { json: !!options.json });
     } catch (error) {
       handleError(error);
     }

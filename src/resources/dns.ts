@@ -49,7 +49,7 @@ dnsResource
       if (opts.proxied) params.proxied = "true";
 
       const response = await client.get(`/zones/${zoneId}/dns_records`, params);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       const fields = opts.fields?.split(",");
       output(data, { json: opts.json, format: opts.format, fields });
     } catch (err) {
@@ -114,7 +114,6 @@ dnsResource
   .description("Update an existing DNS record")
   .argument("<zone-id>", "Zone ID")
   .argument("<record-id>", "DNS record ID")
-  .option("--type <type>", "Record type")
   .option("--name <name>", "Record name")
   .option("--content <content>", "Record content")
   .option("--ttl <seconds>", "TTL in seconds")
@@ -126,7 +125,6 @@ dnsResource
   .action(async (zoneId: string, recordId: string, opts: ActionOpts) => {
     try {
       const body: Record<string, unknown> = {};
-      if (opts.type) body.type = opts.type;
       if (opts.name) body.name = opts.name;
       if (opts.content) body.content = opts.content;
       if (opts.ttl) body.ttl = Number(opts.ttl);
@@ -154,7 +152,7 @@ dnsResource
     try {
       const response = await client.delete(`/zones/${zoneId}/dns_records/${recordId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -168,8 +166,8 @@ dnsResource
   .addHelpText("after", "\nExample:\n  cloudflare-cli dns export abc123")
   .action(async (zoneId: string, opts: ActionOpts) => {
     try {
-      const response = await client.get(`/zones/${zoneId}/dns_records/export`);
-      console.log(String(response));
+      const response = await client.getText(`/zones/${zoneId}/dns_records/export`);
+      process.stdout.write(response.endsWith("\n") ? response : `${response}\n`);
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -218,13 +216,52 @@ dnsResource
 // ── SCAN ───────────────────────────────────────────────
 dnsResource
   .command("scan")
-  .description("Scan DNS records for zone")
+  .description("Trigger an asynchronous DNS record scan")
   .argument("<zone-id>", "Zone ID")
   .option("--json", "Output as JSON")
   .addHelpText("after", "\nExample:\n  cloudflare-cli dns scan abc123")
   .action(async (zoneId: string, opts: ActionOpts) => {
     try {
-      const response = await client.post(`/zones/${zoneId}/dns_records/scan`, {});
+      const response = await client.post(`/zones/${zoneId}/dns_records/scan/trigger`, {});
+      const data = (response as Record<string, unknown>).result;
+      output(data, { json: opts.json });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+dnsResource
+  .command("scan-results")
+  .description("List records discovered by the latest DNS scan")
+  .argument("<zone-id>", "Zone ID")
+  .option("--json", "Output as JSON")
+  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .action(async (zoneId: string, opts: ActionOpts) => {
+    try {
+      const response = await client.get(`/zones/${zoneId}/dns_records/scan/review`);
+      const data = (response as Record<string, unknown>).result;
+      output(data, { json: opts.json, format: opts.format });
+    } catch (err) {
+      handleError(err, opts.json);
+    }
+  });
+
+dnsResource
+  .command("scan-review")
+  .description("Accept or reject records discovered by a DNS scan")
+  .argument("<zone-id>", "Zone ID")
+  .option("--accepts <json>", "JSON array of scanned DNS record objects to accept")
+  .option("--rejects <json>", "JSON array of scanned record IDs to reject")
+  .option("--json", "Output as JSON")
+  .action(async (zoneId: string, opts: ActionOpts & { accepts?: string; rejects?: string }) => {
+    try {
+      if (!opts.accepts && !opts.rejects) {
+        throw new Error("Provide --accepts, --rejects, or both");
+      }
+      const body: Record<string, unknown> = {};
+      if (opts.accepts) body.accepts = JSON.parse(opts.accepts);
+      if (opts.rejects) body.rejects = JSON.parse(opts.rejects);
+      const response = await client.post(`/zones/${zoneId}/dns_records/scan/review`, body);
       const data = (response as Record<string, unknown>).result;
       output(data, { json: opts.json });
     } catch (err) {

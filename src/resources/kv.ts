@@ -115,7 +115,7 @@ kvResource
   .action(async (accountId, namespaceId, keyName) => {
     try {
       const token = await getToken();
-      const url = `${BASE_URL}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${keyName}`;
+      const url = `${BASE_URL}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(keyName)}`;
 
       const response = await fetch(url, {
         headers: {
@@ -147,19 +147,16 @@ kvResource
   .action(async (accountId, namespaceId, keyName, options) => {
     try {
       const token = await getToken();
-      const url = `${BASE_URL}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${keyName}`;
+      const params = new URLSearchParams();
+      if (options.expiration) params.set("expiration", options.expiration);
+      if (options.expirationTtl) params.set("expiration_ttl", options.expirationTtl);
+      const query = params.toString();
+      const url = `${BASE_URL}/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${encodeURIComponent(keyName)}${query ? `?${query}` : ""}`;
 
       const headers: Record<string, string> = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "text/plain",
       };
-
-      if (options.expiration) {
-        headers["Expiration"] = options.expiration;
-      }
-      if (options.expirationTtl) {
-        headers["Expiration-TTL"] = options.expirationTtl;
-      }
 
       const response = await fetch(url, {
         method: "PUT",
@@ -229,12 +226,13 @@ kvResource
   .action(async (accountId, namespaceId, options) => {
     try {
       const keys = JSON.parse(options.keys);
-      const body = { keys };
+      if (!Array.isArray(keys) || keys.some((key) => typeof key !== "string")) {
+        throw new Error("--keys must be a JSON array of strings");
+      }
 
-      const data = await client.delete(`/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk`);
+      const data = await client.post(`/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/bulk/delete`, keys);
       output(data.result, { json: !!options.json, format: options.format as string });
     } catch (err) {
       handleError(err, !!options.json);
     }
   });
-

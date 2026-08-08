@@ -53,7 +53,7 @@ botResource
         body.fight_mode = opts.fightMode;
       }
       if (opts.enableJs !== undefined) {
-        body.enable_js_detection = opts.enableJs;
+        body.enable_js = opts.enableJs;
       }
       if (opts.optimizeWordpress !== undefined) {
         body.optimize_wordpress = opts.optimizeWordpress;

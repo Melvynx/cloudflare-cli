@@ -24,17 +24,21 @@ workersResource
 
 workersResource
   .command("get")
-  .description("Get a specific Worker script")
+  .description("Download a Worker script")
   .argument("<account-id>", "Account ID")
   .argument("<script-name>", "Script name")
-  .option("--json", "Output as JSON")
-  .option("--format <fmt>", "Output format: text, json, csv, yaml")
+  .option("--file <path>", "Write the downloaded script to a file")
   .action(async (accountId: string, scriptName: string, opts: Record<string, string | boolean | undefined>) => {
     try {
-      const data = (await client.get(`/accounts/${accountId}/workers/scripts/${scriptName}`)) as { result: unknown };
-      output(data.result, { json: !!opts.json, format: opts.format as string });
+      const script = await client.getText(`/accounts/${accountId}/workers/scripts/${scriptName}`);
+      if (opts.file) {
+        await Bun.write(opts.file as string, script);
+        console.log(`Worker script written to ${opts.file}`);
+      } else {
+        process.stdout.write(script.endsWith("\n") ? script : `${script}\n`);
+      }
     } catch (err) {
-      handleError(err, !!opts.json);
+      handleError(err);
     }
   });
 

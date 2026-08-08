@@ -50,7 +50,7 @@ const program = new Command();
 program
   .name("cloudflare-cli")
   .description("The ultimate Cloudflare CLI - manage zones, DNS, workers, security, and everything else")
-  .version("1.0.0")
+  .version("1.1.0")
   .option("--json", "Output as JSON", false)
   .option("--format <fmt>", "Output format: text, json, csv, yaml", "text")
   .option("--verbose", "Enable debug logging", false)

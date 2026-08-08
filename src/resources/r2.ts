@@ -10,7 +10,7 @@ r2Resource
   .command("list")
   .description("List R2 buckets")
   .argument("<account-id>", "Account ID")
-  .option("--name-prefix <prefix>", "Filter by bucket name prefix")
+  .option("--name-contains <text>", "Filter by bucket name")
   .option("--cursor <cursor>", "Cursor for pagination")
   .option("--per-page <per-page>", "Results per page")
   .option("--direction <direction>", "Sort direction (asc|desc)")
@@ -20,7 +20,7 @@ r2Resource
   .action(async (accountId, options) => {
     try {
       const params: Record<string, string> = {};
-      if (options.namePrefix) params.name_prefix = options.namePrefix;
+      if (options.nameContains) params.name_contains = options.nameContains;
       if (options.cursor) params.cursor = options.cursor;
       if (options.perPage) params.per_page = options.perPage;
       if (options.direction) params.direction = options.direction;
@@ -97,4 +97,3 @@ r2Resource
       handleError(err, !!options.json);
     }
   });
-

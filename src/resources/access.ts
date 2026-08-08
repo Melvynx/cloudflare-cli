@@ -34,7 +34,7 @@ accessResource
   .action(async (accountId: string, opts: ActionOpts) => {
     try {
       const response = await client.get(`/accounts/${accountId}/access/apps`);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       const fields = opts.fields?.split(",");
       output(data, { json: opts.json, format: opts.format, fields });
     } catch (err) {
@@ -54,7 +54,7 @@ accessResource
   .action(async (accountId: string, appId: string, opts: ActionOpts) => {
     try {
       const response = await client.get(`/accounts/${accountId}/access/apps/${appId}`);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       output(data, { json: opts.json, format: opts.format });
     } catch (err) {
       handleError(err, opts.json);
@@ -84,7 +84,7 @@ accessResource
       if (opts.autoRedirectToIdentity) body.auto_redirect_to_identity = true;
 
       const response = await client.post(`/accounts/${accountId}/access/apps`, body);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       output(data, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
@@ -112,7 +112,7 @@ accessResource
       if (opts.sessionDuration) body.session_duration = opts.sessionDuration;
 
       const response = await client.put(`/accounts/${accountId}/access/apps/${appId}`, body);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       output(data, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
@@ -131,7 +131,7 @@ accessResource
     try {
       const response = await client.delete(`/accounts/${accountId}/access/apps/${appId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -176,7 +176,7 @@ accessResource
       const body: Record<string, unknown> = {
         name: opts.name,
         decision: opts.decision,
-        include: JSON.parse(opts.include),
+        include: JSON.parse(opts.include!),
       };
       if (opts.exclude) body.exclude = JSON.parse(opts.exclude);
       if (opts.require) body.require = JSON.parse(opts.require);
@@ -202,7 +202,7 @@ accessResource
     try {
       const response = await client.delete(`/accounts/${accountId}/access/apps/${appId}/policies/${policyId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -262,7 +262,7 @@ accessResource
     try {
       const body: Record<string, unknown> = {
         name: opts.name,
-        include: JSON.parse(opts.include),
+        include: JSON.parse(opts.include!),
       };
       if (opts.exclude) body.exclude = JSON.parse(opts.exclude);
       if (opts.require) body.require = JSON.parse(opts.require);
@@ -287,7 +287,7 @@ accessResource
     try {
       const response = await client.delete(`/accounts/${accountId}/access/groups/${groupId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -369,7 +369,7 @@ accessResource
     try {
       const response = await client.delete(`/accounts/${accountId}/access/service_tokens/${tokenId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }

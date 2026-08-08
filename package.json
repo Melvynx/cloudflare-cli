@@ -1,14 +1,16 @@
 {
   "name": "cloudflare-cli",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "CLI for the cloudflare API",
   "type": "module",
   "bin": {
     "cloudflare-cli": "./dist/index.js"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outfile dist/index.js --target bun",
-    "dev": "bun run src/index.ts"
+    "build": "bun build src/index.ts --outfile dist/cloudflare-cli.js --target bun",
+    "dev": "bun run src/index.ts",
+    "test": "bun test tests",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "commander": "^13.0.0",

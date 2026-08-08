@@ -93,6 +93,7 @@ loadBalancersResource
       if (options.ttl) body.ttl = parseInt(options.ttl);
       if (options.steeringPolicy) body.steering_policy = options.steeringPolicy;
       if (options.enabled !== undefined) body.enabled = options.enabled;
+      if (options.disabled) body.enabled = false;
       const data = await client.patch(
         `/zones/${zoneId}/load_balancers/${lbId}`,
         body

@@ -34,7 +34,7 @@ rulesResource
 // ── TRANSFORM ──────────────────────────────────────────
 rulesResource
   .command("transform")
-  .description("Get response header transform rules (http_request_late_transform phase)")
+  .description("Get late request-header transform rules (http_request_late_transform phase)")
   .argument("<zone-id>", "Zone ID")
   .option("--json", "Output as JSON")
   .option("--format <fmt>", "Output format: text, json, csv, yaml")
@@ -151,7 +151,7 @@ rulesResource
   .action(async (zoneId: string, phase: string, opts: ActionOpts) => {
     try {
       const body: Record<string, unknown> = {
-        rules: JSON.parse(opts.rules),
+        rules: JSON.parse(opts.rules!),
       };
 
       const response = await client.put(`/zones/${zoneId}/rulesets/phases/${phase}/entrypoint`, body);

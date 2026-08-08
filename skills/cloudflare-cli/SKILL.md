@@ -24,6 +24,7 @@ Always use `--json` flag when calling commands programmatically.
 ```bash
 cloudflare-cli auth set "your-token"
 cloudflare-cli auth test
+cloudflare-cli auth test --account-id <account-id>
 ```
 
 Auth commands: `auth set <token>`, `auth show`, `auth remove`, `auth test`
@@ -59,7 +60,9 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | `cloudflare-cli dns update <zone-id> <record-id> --content 5.6.7.8 --json` | Update record |
 | `cloudflare-cli dns delete <zone-id> <record-id> --json` | Delete record |
 | `cloudflare-cli dns export <zone-id>` | Export as BIND format |
-| `cloudflare-cli dns scan <zone-id> --json` | Scan DNS records |
+| `cloudflare-cli dns scan <zone-id> --json` | Trigger asynchronous DNS scan |
+| `cloudflare-cli dns scan-results <zone-id> --json` | List discovered records |
+| `cloudflare-cli dns scan-review <zone-id> --accepts '[...]' --rejects '["id"]' --json` | Accept or reject scanned records |
 
 ### accounts - Manage accounts
 
@@ -68,7 +71,7 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | `cloudflare-cli accounts list --json` | List accounts |
 | `cloudflare-cli accounts get <account-id> --json` | Get account |
 | `cloudflare-cli accounts members <account-id> --json` | List members |
-| `cloudflare-cli accounts roles <account-id> --json` | List roles |
+| `cloudflare-cli accounts roles <account-id> --json` | List IAM permission groups |
 
 ### settings - Zone settings
 
@@ -84,7 +87,7 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | Command | Description |
 |---------|-------------|
 | `cloudflare-cli workers list <account-id> --json` | List scripts |
-| `cloudflare-cli workers get <account-id> <script> --json` | Get script |
+| `cloudflare-cli workers get <account-id> <script> [--file <path>]` | Download script |
 | `cloudflare-cli workers delete <account-id> <script> --json` | Delete script |
 | `cloudflare-cli workers routes <zone-id> --json` | List routes |
 | `cloudflare-cli workers create-route <zone-id> --pattern "*.example.com/*" --script my-worker --json` | Create route |
@@ -106,6 +109,7 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | `cloudflare-cli kv put-value <account-id> <ns-id> <key> --value "data" --json` | Set value |
 | `cloudflare-cli kv delete-value <account-id> <ns-id> <key> --json` | Delete value |
 | `cloudflare-cli kv bulk-write <account-id> <ns-id> --data '[{"key":"k","value":"v"}]' --json` | Bulk write |
+| `cloudflare-cli kv bulk-delete <account-id> <ns-id> --keys '["k"]' --json` | Bulk delete |
 
 ### d1 - D1 databases
 
@@ -122,6 +126,7 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | Command | Description |
 |---------|-------------|
 | `cloudflare-cli r2 list <account-id> --json` | List buckets |
+| `cloudflare-cli r2 list <account-id> --name-contains assets --json` | Filter buckets by name |
 | `cloudflare-cli r2 create <account-id> --name my-bucket --json` | Create bucket |
 | `cloudflare-cli r2 get <account-id> <bucket> --json` | Get bucket |
 | `cloudflare-cli r2 delete <account-id> <bucket> --json` | Delete bucket |
@@ -207,7 +212,7 @@ Token is stored in `~/.config/tokens/cloudflare-cli.txt`.
 | Command | Description |
 |---------|-------------|
 | `cloudflare-cli rate-limits list <zone-id> --json` | List rules |
-| `cloudflare-cli rate-limits create <zone-id> --threshold 100 --period 60 --action-mode ban --action-timeout 3600 --json` | Create rule |
+| `cloudflare-cli rate-limits create <zone-id> --threshold 100 --period 60 --action-mode block --action-timeout 3600 --json` | Create Rulesets-based rule |
 | `cloudflare-cli rate-limits delete <zone-id> <rule-id> --json` | Delete rule |
 
 ### security - Zone security settings

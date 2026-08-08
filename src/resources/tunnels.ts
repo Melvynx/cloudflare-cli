@@ -26,7 +26,7 @@ tunnelsResource
   .argument("<account-id>", "Account ID")
   .option("--name <name>", "Filter by tunnel name")
   .option("--is-deleted", "Include deleted tunnels (flag)")
-  .option("--status <status>", "Filter by status (active|inactive|degraded)")
+  .option("--status <status>", "Filter by status (inactive|degraded|healthy|down)")
   .option("--page <n>", "Page number", "1")
   .option("--per-page <n>", "Results per page", "20")
   .option("--fields <cols>", "Comma-separated columns to display")
@@ -44,7 +44,7 @@ tunnelsResource
       if (opts.isDeleted) params.is_deleted = "true";
 
       const response = await client.get(`/accounts/${accountId}/cfd_tunnel`, params);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       const fields = opts.fields?.split(",");
       output(data, { json: opts.json, format: opts.format, fields });
     } catch (err) {
@@ -107,7 +107,7 @@ tunnelsResource
     try {
       const response = await client.delete(`/accounts/${accountId}/cfd_tunnel/${tunnelId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }

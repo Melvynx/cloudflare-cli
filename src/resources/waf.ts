@@ -69,7 +69,7 @@ wafResource
     try {
       const response = await client.delete(`/zones/${zoneId}/rulesets/${rulesetId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -167,7 +167,7 @@ wafResource
     try {
       const response = await client.delete(`/zones/${zoneId}/rulesets/${rulesetId}/rules/${ruleId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }

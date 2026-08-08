@@ -9,9 +9,13 @@ interface JsonEnvelope {
 
 export function output(
   data: unknown,
-  opts: { json?: boolean; format?: string; fields?: string[]; noHeader?: boolean } = {},
+  optsOrJson: { json?: boolean; format?: string; fields?: string[]; noHeader?: boolean } | boolean = {},
+  legacyFormat?: string,
 ): void {
-  const isJson = opts.json ?? globalFlags.json;
+  const opts = typeof optsOrJson === "boolean"
+    ? { json: optsOrJson, format: legacyFormat }
+    : optsOrJson;
+  const isJson = Boolean(opts.json || globalFlags.json);
   const format = isJson ? "json" : (opts.format ?? globalFlags.format);
 
   switch (format) {

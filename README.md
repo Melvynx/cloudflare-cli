@@ -2,6 +2,9 @@
 
 CLI for the Cloudflare API. Made with [api2cli.dev](https://api2cli.dev).
 
+Current release: **1.1.0**. It supports user-owned and account-owned API tokens,
+non-JSON API responses, asynchronous DNS scans, and Rulesets-based rate limiting.
+
 ## Install
 
 ```bash
@@ -22,7 +25,8 @@ npx skills add Melvynx/cloudflare-cli
 cloudflare-cli auth set <token>
 cloudflare-cli auth show          # masked by default
 cloudflare-cli auth show --raw    # full token
-cloudflare-cli auth test          # verify token works
+cloudflare-cli auth test          # auto-detect user-owned or account-owned token
+cloudflare-cli auth test --account-id <id> # explicitly verify account-owned token
 cloudflare-cli auth remove        # delete saved token
 ```
 
@@ -55,11 +59,13 @@ Manage DNS records for a zone.
 cloudflare-cli dns list <zone-id> [--type A|CNAME|MX|TXT|...] [--name <name>] [--proxied]
 cloudflare-cli dns get <zone-id> <record-id>
 cloudflare-cli dns create <zone-id> --type A --name @ --content 1.2.3.4 [--ttl <seconds>] [--proxied] [--priority <n>]
-cloudflare-cli dns update <zone-id> <record-id>
+cloudflare-cli dns update <zone-id> <record-id> # type changes require delete + create
 cloudflare-cli dns delete <zone-id> <record-id>
 cloudflare-cli dns export <zone-id>
 cloudflare-cli dns import <zone-id>
 cloudflare-cli dns scan <zone-id>
+cloudflare-cli dns scan-results <zone-id>
+cloudflare-cli dns scan-review <zone-id> [--accepts '<record-array>'] [--rejects '<id-array>']
 ```
 
 ### accounts
@@ -72,7 +78,7 @@ cloudflare-cli accounts get <account-id>
 cloudflare-cli accounts members <account-id>
 cloudflare-cli accounts member-get <account-id> <member-id>
 cloudflare-cli accounts member-remove <account-id> <member-id>
-cloudflare-cli accounts roles <account-id>
+cloudflare-cli accounts roles <account-id> # lists IAM permission groups
 ```
 
 ### settings
@@ -92,7 +98,7 @@ Manage Workers scripts, routes, and cron triggers.
 
 ```bash
 cloudflare-cli workers list <account-id>
-cloudflare-cli workers get <account-id> <script-name>
+cloudflare-cli workers get <account-id> <script-name> [--file <path>]
 cloudflare-cli workers delete <account-id> <script-name>
 cloudflare-cli workers tail <account-id> <script-name>
 cloudflare-cli workers routes <zone-id>
@@ -118,10 +124,10 @@ cloudflare-cli kv delete <account-id> <namespace-id>
 cloudflare-cli kv rename <account-id> <namespace-id>
 cloudflare-cli kv keys <account-id> <namespace-id>
 cloudflare-cli kv get-value <account-id> <namespace-id> <key-name>
-cloudflare-cli kv put-value <account-id> <namespace-id> <key-name> --value <value> [--expiration-ttl <ttl>]
+cloudflare-cli kv put-value <account-id> <namespace-id> <key-name> --value <value> [--expiration <timestamp>] [--expiration-ttl <ttl>]
 cloudflare-cli kv delete-value <account-id> <namespace-id> <key-name>
 cloudflare-cli kv bulk-write <account-id> <namespace-id>
-cloudflare-cli kv bulk-delete <account-id> <namespace-id>
+cloudflare-cli kv bulk-delete <account-id> <namespace-id> --keys '["key-1","key-2"]'
 ```
 
 ### d1
@@ -288,8 +294,6 @@ cloudflare-cli security challenge-ttl <zone-id>
 cloudflare-cli security set-challenge-ttl <zone-id>
 cloudflare-cli security browser-check <zone-id>
 cloudflare-cli security set-browser-check <zone-id>
-cloudflare-cli security privacy-pass <zone-id>
-cloudflare-cli security set-privacy-pass <zone-id>
 ```
 
 ### waf
@@ -334,12 +338,12 @@ cloudflare-cli bot update <zone-id>
 
 ### rate-limits
 
-Manage rate limiting rules.
+Manage rate limiting rules through Cloudflare's Rulesets API (`http_ratelimit`).
 
 ```bash
 cloudflare-cli rate-limits list <zone-id>
 cloudflare-cli rate-limits get <zone-id> <rule-id>
-cloudflare-cli rate-limits create <zone-id>
+cloudflare-cli rate-limits create <zone-id> --threshold 100 --period 60 [--expression '<rules-expression>']
 cloudflare-cli rate-limits update <zone-id> <rule-id>
 cloudflare-cli rate-limits delete <zone-id> <rule-id>
 ```

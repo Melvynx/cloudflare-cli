@@ -1,8 +1,9 @@
 import { Command } from "commander";
 import { getToken, setToken, removeToken, hasToken, maskToken } from "../lib/auth.js";
 import { client } from "../lib/client.js";
+import { globalFlags } from "../lib/config.js";
 import { log } from "../lib/logger.js";
-import { handleError } from "../lib/errors.js";
+import { CliError, handleError } from "../lib/errors.js";
 
 export const authCommand = new Command("auth").description("Manage API authentication");
 
@@ -42,12 +43,62 @@ authCommand
 authCommand
   .command("test")
   .description("Verify your token works by making a test API call")
+  .option("--account-id <id>", "Verify an account-owned token for this account")
+  .option("--json", "Output as JSON")
   .addHelpText("after", "\nExample:\n  cloudflare-cli auth test")
-  .action(async () => {
+  .action(async (opts: { accountId?: string; json?: boolean }) => {
+    const json = Boolean(opts.json || globalFlags.json);
     try {
-      await client.get("/");
-      log.success("Token is valid");
+      let response: { result?: { status?: string } };
+
+      if (opts.accountId) {
+        response = await client.get(`/accounts/${opts.accountId}/tokens/verify`);
+      } else {
+        try {
+          response = await client.get("/user/tokens/verify");
+        } catch (error) {
+          if (!(error instanceof CliError) || ![401, 403].includes(error.code)) throw error;
+
+          let accountIds: string[] = [];
+          try {
+            const accounts = await client.get<{ result?: Array<{ id?: string }> }>("/accounts", {
+              per_page: "50",
+            });
+            accountIds = (accounts.result ?? [])
+              .map((account) => account.id)
+              .filter((id): id is string => Boolean(id));
+          } catch {
+            const zones = await client.get<{ result?: Array<{ account?: { id?: string } }> }>("/zones", {
+              per_page: "1",
+            });
+            accountIds = (zones.result ?? [])
+              .map((zone) => zone.account?.id)
+              .filter((id): id is string => Boolean(id));
+          }
+
+          if (accountIds.length === 0) throw error;
+
+          let lastError: unknown = error;
+          response = {};
+          for (const accountId of accountIds) {
+            try {
+              response = await client.get(`/accounts/${accountId}/tokens/verify`);
+              lastError = null;
+              break;
+            } catch (accountError) {
+              lastError = accountError;
+            }
+          }
+          if (lastError) throw lastError;
+        }
+      }
+
+      if (json) {
+        console.log(JSON.stringify({ ok: true, data: response.result ?? response }, null, 2));
+      } else {
+        log.success("Token is valid");
+      }
     } catch (err) {
-      handleError(err);
+      handleError(err, json);
     }
   });

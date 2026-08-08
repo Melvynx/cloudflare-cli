@@ -31,7 +31,7 @@ export const settingsResource = new Command("settings")
 // ── LIST ───────────────────────────────────────────────
 settingsResource
   .command("list")
-  .description("List all zone settings")
+  .description("List all zone settings (deprecated API; EOL March 31, 2027)")
   .argument("<zone-id>", "Zone ID")
   .option("--fields <cols>", "Comma-separated columns to display")
   .option("--json", "Output as JSON")
@@ -80,7 +80,7 @@ settingsResource
     try {
       let value: unknown = opts.value;
       try {
-        value = JSON.parse(opts.value);
+        value = JSON.parse(opts.value!);
       } catch {
         value = opts.value;
       }
@@ -98,20 +98,27 @@ settingsResource
 // ── BATCH-SET ──────────────────────────────────────────
 settingsResource
   .command("batch-set")
-  .description("Set multiple zone settings in one request")
+  .description("Set multiple zone settings using supported per-setting requests")
   .argument("<zone-id>", "Zone ID")
   .requiredOption("--items <json>", 'Items JSON array (e.g. \'[{"id":"always_use_https","value":"on"},{"id":"min_tls_version","value":"1.2"}]\')')
   .option("--json", "Output as JSON")
   .addHelpText("after", `\nExample:\n  cloudflare-cli settings batch-set abc123 --items '[{"id":"always_use_https","value":"on"},{"id":"min_tls_version","value":"1.2"}]'\n${COMMON_SETTINGS}`)
   .action(async (zoneId: string, opts: ActionOpts) => {
     try {
-      const body: Record<string, unknown> = {
-        items: JSON.parse(opts.items),
-      };
+      const items = JSON.parse(opts.items ?? "[]") as Array<{ id?: unknown; value?: unknown }>;
+      if (!Array.isArray(items) || items.some((item) => typeof item.id !== "string")) {
+        throw new Error("--items must be a JSON array of objects with string id fields");
+      }
 
-      const response = await client.patch(`/zones/${zoneId}/settings`, body);
-      const data = (response as Record<string, unknown>).result;
-      output(data, { json: opts.json });
+      const results = await Promise.all(
+        items.map(async (item) => {
+          const response = await client.patch(`/zones/${zoneId}/settings/${item.id}`, {
+            value: item.value,
+          });
+          return response.result;
+        }),
+      );
+      output(results, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }

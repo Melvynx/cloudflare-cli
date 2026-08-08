@@ -48,7 +48,7 @@ zonesResource
       if (opts.accountId) params.account_id = opts.accountId;
 
       const response = await client.get("/zones", params);
-      const data = (response as Record<string, unknown>).result;
+      const data = (response as { result?: Record<string, unknown> }).result ?? {};
       const fields = opts.fields?.split(",");
       output(data, { json: opts.json, format: opts.format, fields });
     } catch (err) {
@@ -114,7 +114,7 @@ zonesResource
     try {
       const response = await client.delete(`/zones/${zoneId}`);
       const data = (response as Record<string, unknown>).result;
-      output({ deleted: true, ...data }, { json: opts.json });
+      output({ deleted: true, ...(data as Record<string, unknown>) }, { json: opts.json });
     } catch (err) {
       handleError(err, opts.json);
     }
@@ -158,7 +158,7 @@ zonesResource
 // ── SETTINGS ───────────────────────────────────────────
 zonesResource
   .command("settings")
-  .description("Get zone settings")
+  .description("Get zone settings (deprecated batch API; EOL March 31, 2027)")
   .argument("<zone-id>", "Zone ID")
   .option("--json", "Output as JSON")
   .option("--format <fmt>", "Output format: text, json, csv, yaml")

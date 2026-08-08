@@ -8,7 +8,7 @@ export const analyticsResource = new Command('analytics')
 
 analyticsResource
   .command('dashboard <zone-id>')
-  .description('Get analytics dashboard')
+  .description('Get analytics dashboard (legacy; prefer analytics graphql)')
   .option('--since <since>', 'Start time (ISO date or relative like -1440)')
   .option('--until <until>', 'End time (ISO date or 0 for now)')
   .option('--continuous', 'Continuous mode')
@@ -35,7 +35,7 @@ analyticsResource
 
 analyticsResource
   .command('colos <zone-id>')
-  .description('Get colocation analytics')
+  .description('Get colocation analytics (legacy; prefer analytics graphql)')
   .option('--since <since>', 'Start time (ISO date or relative like -1440)')
   .option('--until <until>', 'End time (ISO date or 0 for now)')
   .option('--continuous', 'Continuous mode')
